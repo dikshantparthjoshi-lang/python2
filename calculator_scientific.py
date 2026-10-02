@@ -77,11 +77,18 @@ if t == "open":
                 print("Error: Square root is not defined for negative numbers.")
         # To make a loop run forever until told otherwise, 
         # we check inside the loop if the user wants to stop.
-        ask_again = input("Do you want to continue? (yes/no): ").strip().lower()
-        if ask_again == 'no':
-            print("Closing calculator...")
-            break
+        while True:
+            ask_again = input("Do you want to continue? (yes/no): ").strip().lower()
+            if ask_again in ("yes", "no"):
+                break
+            print("Please enter a valid option: 'yes' or 'no'.")
 
-# ➡️ This aligns perfectly with the 'if t == "open":' statement above!
-elif t == "close":
-    print("Calculator closed immediately.") # Changed 'break' to a print because there is no loop here
+        if ask_again == "no":
+            print("Closing calculator...")
+            break  # exits the outer calculator loop
+
+if t == "close":
+    print("Calculator closed.")
+                
+                
+

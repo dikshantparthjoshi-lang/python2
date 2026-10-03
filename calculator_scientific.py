@@ -5,7 +5,7 @@ while t not in ["open", "close"]:
     print("Please enter a valid option: 'open' or 'close'.")
     t = input("open/close calculator:").strip().lower()
 if t == "open":
-    # 🔁 The loop is inside the "open" block
+    # The loop is inside the "open" block
     while True:
         while True:
             try:
@@ -47,10 +47,10 @@ if t == "open":
             print(math.sin(math.radians(x)))
         elif operator == "log":
             try:
-                print(math.log10(x)) # Note: standard log is base 10
+                print(math.log10(x)) 
             except ValueError:
-                print("Error: Logarithm is not defined for non-positive numbers.")  
-        elif operator == "ln":  # Fixed: changed from 'else operator == "ln"' to 'elif'
+                print("Error: Logarithm is not defined for non-positive numbers.") 
+        elif operator == "ln":  
             try:
                 print(math.log(x, math.e)) 
             except ValueError:
@@ -58,12 +58,18 @@ if t == "open":
         elif operator == "arctan":
             print(math.degrees(math.atan(x)))  
         elif operator == "arcsin":
-            print(math.degrees(math.asin(x)))  
+            try:
+                print(math.degrees(math.asin(x)))  
+            except ValueError:
+                print("Error: arcsin is only defined for values in the domain [-1, 1].")
         elif operator == "arccos":
-            print(math.degrees(math.acos(x)))
+            try:
+                print(math.degrees(math.acos(x)))
+            except ValueError:
+                print("Error: arccos is only defined for values in the domain [-1, 1].")
         elif operator == "cust_log":
             base = float(input("Enter the base for custom logarithm: "))
-            if isinstance(base, (int, float)) and base <= 0:
+            if isinstance(base, (int, float)) and base <= 0:# checks if the base is a positive number or not 
                 print("Error: Logarithm requires a positive base.")
                 continue
             try:
@@ -75,7 +81,7 @@ if t == "open":
                 print(math.sqrt(x))  
             except ValueError:
                 print("Error: Square root is not defined for negative numbers.")
-        # To make a loop run forever until told otherwise, 
+         
         # we check inside the loop if the user wants to stop.
         while True:
             ask_again = input("Do you want to continue? (yes/no): ").strip().lower()

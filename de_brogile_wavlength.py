@@ -11,14 +11,17 @@ def wavelength_calc(m, v):
     p = calc.multiply(m, v)
     return calc.divide(h, p)
 
+
 def velocity_calc(m, wavelength):
     """Calculates Particle Velocity: v = h / (m * λ)"""
     p = calc.divide(h, wavelength)
     return calc.divide(p, m)
 
+
 def atom_mass_to_kg(atomic_mass):
     """Converts atomic mass units (u) to kilograms (kg)"""
     return atomic_mass * 1.66053906660e-27
+
 
 def get_float_input(prompt):
     """Helper function to safely get positive floating-point input from user."""
@@ -31,6 +34,7 @@ def get_float_input(prompt):
             return value
         except ValueError:
             print("Invalid input. Please enter a numerical value.")
+            
 
 def calculate_single_option():
     """Handles standard single-value calculations."""
@@ -76,6 +80,7 @@ def calculate_single_option():
             wavelength = get_float_input("Enter De Broglie wavelength in meters: ")
             velocity = velocity_calc(mass_kg, wavelength)
             print(f"-> Velocity of {symbol_fmt}: {velocity:.5e} m/s")
+            
 
 def compare_values():
     """Handles optional side-by-side comparison with bar plots."""
@@ -116,11 +121,12 @@ def compare_values():
 
         # Plot comparison
         plt.figure(figsize=(7, 5))
-        plt.bar(["Particle 1", "Particle 2"], [vel1, vel2], color=["#1469C5", '#d95f02'])
+        plt.bar(["Particle 1", "Particle 2"], [vel1, vel2], color=["#1469C5", "#C10F0F"])
         plt.ylabel("Velocity (m/s)")
         plt.title("Velocity Comparison")
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.show()
+        
 
 def main():
     print("Initializing De Broglie Wavelength Calculator...")
@@ -134,14 +140,118 @@ def main():
         
         want_compare = input("\nDo you want to compare two values on a chart? (yes/no): ").strip().lower()
         while want_compare not in ["yes", "no"]:
-            want_compare = input("Please enter 'yes' or 'no': ").strip().lower()
-
-        if want_compare == "yes":
+            print("Invalid choice. Please enter 'yes' or 'no'.")
+            want_compare = input("Do you want to compare two values on a chart? (yes/no): ").strip().lower()
+        a= input("Do you compare element or standard values? (element/standard): ").strip().lower()
+        while a not in ["element", "standard"]:
+            print("Invalid choice. Please enter 'element' or 'standard'.")
+            a = input("Do you compare element or standard values? (element/standard): ").strip().lower()
+        if a=="element":
+            e= input("Do you want to compare two different elements or the same element? (different/same): ").strip().lower()
+            while e not in ["different", "same"]:
+                print("Invalid choice. Please enter 'different' or 'same'.")
+                e = input("Do you want to compare two different elements or the same element? (different/same): ").strip().lower()
+            if e=="different":
+                compare_values_element()
+            elif e=="same":
+                compare_values_same_element()
+        elif a=="standard":
             compare_values()
 
         again = input("\nRun another calculation? (yes/no): ").strip().lower()
         if again != "yes":
             print("Exiting calculator. Goodbye!")
             break
+        
+        
+def compare_values_element():
+    '''Handles optional side-by-side comparison for elements with bar plots.'''
+    k= input("Do you want to compare two elements? (yes/no): ").strip().lower()
+    while k not in ["yes", "no"]:
+        print("Invalid choice. Please enter 'yes' or 'no'.")
+        k = input("Please enter 'yes' or 'no': ").strip().lower()
+    l= input("element 1 symbol: ").strip()
+    element_info1 = api.get_element_data(l)
+    while not element_info1:
+        print(f"Element symbol '{l}' not found in database.")
+        l = input("Please enter a valid element Symbol: ").strip()
+        element_info1 = api.get_element_data(l)
+    k= input("element 2 symbol: ").strip()
+    element_info2 = api.get_element_data(k)
+    while not element_info2:
+        print(f"Element symbol '{k}' not found in database.")
+        k = input("Please enter a valid element Symbol: ").strip()
+        element_info2 = api.get_element_data(k)
+    atomic_mass1 = element_info1["atomic_mass"]
+    atomic_mass2 = element_info2["atomic_mass"]
+    mass_kg1 = atom_mass_to_kg(atomic_mass1)
+    mass_kg2 = atom_mass_to_kg(atomic_mass2)
+    t= input("Do you want to compare wavelength or velocity? (wavelength/velocity): ").strip().lower()
+    while t not in ["wavelength", "velocity"]:
+        print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
+        t = input("Please enter 'wavelength' or 'velocity': ").strip().lower()
+    if t=='wavelength':
+        v1 = get_float_input(f"Enter velocity for {element_info1['name']} in m/s: ")
+        v2 = get_float_input(f"Enter velocity for {element_info2['name']} in m/s: ")
+        wl1 = wavelength_calc(mass_kg1, v1)
+        wl2 = wavelength_calc(mass_kg2, v2)
+        plt.figure(figsize=(7, 5))
+        plt.bar([element_info1['name'], element_info2['name']], [wl1, wl2], color=['#2b5c8f', '#d95f02'])
+        plt.ylabel("Wavelength (m)")
+        plt.title("De Broglie Wavelength Comparison")
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.show()
+    elif t=='velocity':
+        wl1 = get_float_input(f"Enter wavelength for {element_info1['name']} in m: ")
+        wl2 = get_float_input(f"Enter wavelength for {element_info2['name']} in m: ")
+        vel1 = velocity_calc(mass_kg1, wl1)
+        vel2 = velocity_calc(mass_kg2, wl2)
+        plt.figure(figsize=(7, 5))
+        plt.bar([element_info1['name'], element_info2['name']], [vel1, vel2], color=["#1469C5", "#C10F0F"])
+        plt.ylabel("Velocity (m/s)")
+        plt.title("Velocity Comparison")
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.show()
+        
+        
+def compare_values_same_element():
+    '''Handles optional side-by-side comparison for the same element with bar plots.'''
+    symbol = input("Enter element Symbol (e.g., H, He, Fe): ").strip()
+    element_info = api.get_element_data(symbol)
+    while not element_info:
+        print(f"Element symbol '{symbol}' not found in database.")
+        symbol = input("Please enter a valid element Symbol: ").strip()
+        element_info = api.get_element_data(symbol)
+    atomic_mass = element_info["atomic_mass"]
+    mass_kg = atom_mass_to_kg(atomic_mass)
+    t= input("Do you want to compare wavelength or velocity? (wavelength/velocity): ").strip().lower()
+    while t not in ["wavelength", "velocity"]:
+        print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
+        t = input("Please enter 'wavelength' or 'velocity': ").strip().lower()
+        
+    if t=='wavelength':
+        v1 = get_float_input(f"Enter velocity 1 for {element_info['name']} in m/s: ")
+        v2 = get_float_input(f"Enter velocity 2 for {element_info['name']} in m/s: ")
+        wl1 = wavelength_calc(mass_kg, v1)
+        wl2 = wavelength_calc(mass_kg, v2)
+        plt.figure(figsize=(7, 5))
+        plt.bar([f"{element_info['name']} (v1)", f"{element_info['name']} (v2)"], [wl1, wl2], color=['#2b5c8f', '#d95f02'])
+        plt.ylabel("Wavelength (m)")
+        plt.title(f"De Broglie Wavelength Comparison for {element_info['name']}")
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.show()
+        
+    elif t=='velocity':
+        wl1 = get_float_input(f"Enter wavelength 1 for {element_info['name']} in m: ")
+        wl2 = get_float_input(f"Enter wavelength 2 for {element_info['name']} in m: ")
+        vel1 = velocity_calc(mass_kg, wl1)
+        vel2 = velocity_calc(mass_kg, wl2)
+        plt.figure(figsize=(7, 5))
+        plt.bar([f"{element_info['name']} (λ1)", f"{element_info['name']} (λ2)"], [vel1, vel2], color=["#1469C5", "#C10F0F"])
+        plt.ylabel("Velocity (m/s)")
+        plt.title(f"Velocity Comparison for {element_info['name']}")
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.show()
+
 
 main()

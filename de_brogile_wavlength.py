@@ -38,48 +38,32 @@ def get_float_input(prompt):
 
 def calculate_single_option():
     """Handles standard single-value calculations."""
-    option = input("Enter what to calculate (wavelength / velocity / element): ").strip().lower()
-    while option not in ["wavelength", "velocity", "element"]:
-        print("Invalid choice. Please choose 'wavelength', 'velocity', or 'element'.")
-        option = input("Enter what to calculate (wavelength / velocity / element): ").strip().lower()
+    element = input("Do you want to calculate velocity and wavelength for which element: ").strip().lower()
+    x= api.get_element_data(element)
+    if x is None:# ye error ko dekhna ek bar kyuki chatgpt ka tareka ka architecture sahi hai hum while ki jagaha if use kar rahe hai idhar par
+        print("Provide a valid element symbol.")
+        element= input("Do you want to calculate velocity and wavelength for which element:  ")
+    
+    option = input(f"Enter what to calculate for '{api.get_element_data(element)["name"]}' wavelength or velocity: ").strip().lower()
+    while option not in ["wavelength", "velocity"]:
+        print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
+        option = input(f"Enter what to calculate for '{element}' (wavelength / velocity ): ").strip().lower()
 
-    if option == "wavelength":
-        m = get_float_input("Enter mass of particle in kg: ")
-        v = get_float_input("Enter velocity of particle in m/s: ")
-        wavelength = wavelength_calc(m, v)
-        print(f"-> De Broglie wavelength: {wavelength:.5e} meters")# '.5e' converts to scientific notation with 5 decimal places
-
-    elif option == "velocity":
-        m = get_float_input("Enter mass of particle in kg: ")
-        wavelength = get_float_input("Enter De Broglie wavelength in meters: ")
-        velocity = velocity_calc(m, wavelength)
-        print(f"-> Velocity of particle: {velocity:.5e} m/s")
-
-    elif option == "element":
-        symbol = input("Enter element Symbol (e.g., H, He, Fe): ").strip()
-        element_info = api.get_element_data(symbol)
-        while not element_info:
-            print(f"Element symbol '{symbol}' not found in database.")
-            symbol = input("Please enter a valid element Symbol: ").strip()
-            element_info = api.get_element_data(symbol)
-
+    if option == "wavelength":# update needed here check the code precisily
+        element_info = api.get_element_data(element)
         atomic_mass = element_info["atomic_mass"]
         mass_kg = atom_mass_to_kg(atomic_mass)
         symbol_fmt = element_info["symbol"]
         print(f"Loaded Element: {element_info['name']} ({symbol_fmt}) | Mass: {atomic_mass} u ({mass_kg:.5e} kg)")
 
-        choice = input(f"Calculate wavelength or velocity for {symbol_fmt}? (wavelength/velocity): ").strip().lower()
-        while choice not in ["wavelength", "velocity"]:
-            choice = input("Invalid option. Enter 'wavelength' or 'velocity': ").strip().lower()
- 
-        if choice == "wavelength":
-            v = get_float_input("Enter velocity of particle in m/s: ")
-            wavelength = wavelength_calc(mass_kg, v)
-            print(f"-> De Broglie wavelength of {symbol_fmt}: {wavelength:.5e} meters")
-        else:
-            wavelength = get_float_input("Enter De Broglie wavelength in meters: ")
-            velocity = velocity_calc(mass_kg, wavelength)
-            print(f"-> Velocity of {symbol_fmt}: {velocity:.5e} m/s")
+        
+        v = get_float_input("Enter velocity of particle in m/s: ")
+        wavelength = wavelength_calc(mass_kg, v)
+        print(f"-> De Broglie wavelength of {symbol_fmt}: {wavelength:.5e} meters")
+    elif option=="velocity":
+        wavelength = get_float_input("Enter De Broglie wavelength in meters: ")
+        velocity = velocity_calc(mass_kg, wavelength)
+        print(f"-> Velocity of {symbol_fmt}: {velocity:.5e} m/s")
             
 
 def compare_values():
@@ -111,7 +95,7 @@ def compare_values():
     elif comp == "velocity":
         print("\nEntry 1:")
         m1 = get_float_input("Enter mass 1 (kg): ")
-        wl1 = get_float_input("Enter wavelength 1 (m): ")
+        wl1 = get_float_input("Enter wavelength 1 (metre): ")
         vel1 = velocity_calc(m1, wl1)
 
         print("\nEntry 2:")
@@ -131,54 +115,146 @@ def compare_values():
 def main():
     print("Initializing De Broglie Wavelength Calculator...")
     elements_db = api.fetch_all_elements()
-    
-    if not elements_db:
-        print("Warning: Could not connect to element API database. Element features will be limited.")
-
     while True:
-        calculate_single_option()
-        
-        want_compare = input("\nDo you want to compare two values on a chart? (yes/no): ").strip().lower()
-        while want_compare not in ["yes", "no"]:
-            print("Invalid choice. Please enter 'yes' or 'no'.")
-            want_compare = input("Do you want to compare two values on a chart? (yes/no): ").strip().lower()
-        a= input("Do you compare element or standard values? (element/standard): ").strip().lower()
-        while a not in ["element", "standard"]:
-            print("Invalid choice. Please enter 'element' or 'standard'.")
-            a = input("Do you compare element or standard values? (element/standard): ").strip().lower()
-        if a=="element":
-            e= input("Do you want to compare two different elements or the same element? (different/same): ").strip().lower()
-            while e not in ["different", "same"]:
-                print("Invalid choice. Please enter 'different' or 'same'.")
-                e = input("Do you want to compare two different elements or the same element? (different/same): ").strip().lower()
-            if e=="different":
-                compare_values_element()
-            elif e=="same":
-                compare_values_same_element()
-        elif a=="standard":
-            compare_values()
-
+        if not elements_db:
+            print("Warning: Could not connect to element API database. Element features will be limited.")
+            print("Please check your internet connection or try again later.")
+            print("You can still perform standard calculations without element data.")
+            l=input(f"Do you want to just calculate a single value or compare two values \"with graph\"(single/double): ").strip().lower()
+            if l== "single":
+                api_limit_check()
+            if l== "double":
+                k = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+                while k not in ["wavelength", "velocity"]:
+                    print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
+                    k = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+                if k=="wavlength":
+                    m1 = get_float_input("Enter mass of particle in kg: ")
+                    v1 = get_float_input("Enter velocity of particle in m/s: ")
+                    wavelength1 = wavelength_calc(m1, v1)
+                    print(f"-> De Broglie wavelength: {wavelength1:.5e} meters")
+                    m2 = get_float_input("Enter mass of particle in kg: ")
+                    v2 = get_float_input("Enter velocity of particle in m/s: ")
+                    wavelength2 = wavelength_calc(m2, v2)
+                    print(f"-> De Broglie wavelength: {wavelength2:.5e} meters")
+                    plt.figure(figsize=(7, 5))
+                    plt.bar(["Particle1","Particle2"],[wavelength1,wavelength2],color=["#1469C5", "#C10F0F"])
+                    plt.title("Wavelength Comparison")
+                    plt.ylabel("Wavelength (metre)")
+                    plt.grid(axis='y', linestyle='--', alpha=0.7)
+                    plt.show()
+                if k=="velocity":
+                    m1 = get_float_input("Enter mass of particle in kg: ")
+                    wavelength1 = get_float_input("Enter De Broglie wavelength in meters: ")
+                    velocity1 = velocity_calc(m1, wavelength1)
+                    print(f"-> Velocity of particle: {velocity1:.5e} m/s")
+                    m2 = get_float_input("Enter mass of particle in kg: ")
+                    wavelength2 = get_float_input("Enter De Broglie wavelength in meters: ")
+                    velocity2 = velocity_calc(m2, wavelength2)
+                    print(f"-> Velocity of particle: {velocity2:.5e} m/s")
+                    plt.figure(figsize=(7, 5))
+                    plt.bar(["Particle 1", "Particle 2"], [velocity1, velocity2], color=["#1469C5", "#C10F0F"])
+                    plt.ylabel("Velocity (m/s)")
+                    plt.title("Velocity Comparison")
+                    plt.grid(axis='y', linestyle='--', alpha=0.7)
+                    plt.show()
+                    
+        elif elements_db:
+                l= input("Do you want to just calculate a single value or compare two values \"with graph\"(single/double):")
+                while l not in ["single","double"]:
+                    l= input("Invalid Input. Please enter either single or double:")
+                k= input(f"Do you want to create {l} value calculation element or standard (element/standard): ")
+                while k not in ["element","standard"]:
+                    l= input("Invalid Input. Please either element or standard:")
+                if k=="element":
+                    if l=="single":
+                        calculate_single_option()
+                    elif l=="double":
+                        x= input("Do you want to do calculation for same element or different element(same/different):")
+                        while x not in ["same","different"]:
+                            x= input("Invalid Input. Either input same or different:")
+                        if x=="same":
+                            compare_values_same_element()
+                        if x=="different":
+                            compare_values_element()
+                if k=="standard":
+                    if l=="single":
+                        api_limit_check()
+                    if l=="double":
+                        k = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+                        while k not in ["wavelength", "velocity"]:
+                            print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
+                            k = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+                        if k=="wavlength":
+                            m1 = get_float_input("Enter mass of particle in kg: ")
+                            v1 = get_float_input("Enter velocity of particle in m/s: ")
+                            wavelength1 = wavelength_calc(m1, v1)
+                            print(f"-> De Broglie wavelength: {wavelength1:.5e} meters")
+                            m2 = get_float_input("Enter mass of particle in kg: ")
+                            v2 = get_float_input("Enter velocity of particle in m/s: ")
+                            wavelength2 = wavelength_calc(m2, v2)
+                            print(f"-> De Broglie wavelength: {wavelength2:.5e} meters")
+                            plt.figure(figsize=(7, 5))
+                            plt.bar(["Particle1","Particle2"],[wavelength1,wavelength2],color=["#1469C5", "#C10F0F"])
+                            plt.title("Wavelength Comparison")
+                            plt.ylabel("Wavelength (metre)")
+                            plt.grid(axis='y', linestyle='--', alpha=0.7)
+                            plt.show()
+                        if k=="velocity":
+                            m1 = get_float_input("Enter mass of particle in kg: ")
+                            wavelength1 = get_float_input("Enter De Broglie wavelength in meters: ")
+                            velocity1 = velocity_calc(m1, wavelength1)
+                            print(f"-> Velocity of particle: {velocity1:.5e} m/s")
+                            m2 = get_float_input("Enter mass of particle in kg: ")
+                            wavelength2 = get_float_input("Enter De Broglie wavelength in meters: ")
+                            velocity2 = velocity_calc(m2, wavelength2)
+                            print(f"-> Velocity of particle: {velocity2:.5e} m/s")
+                            plt.figure(figsize=(7, 5))
+                            plt.bar(["Particle 1", "Particle 2"], [velocity1, velocity2], color=["#1469C5", "#C10F0F"])
+                            plt.ylabel("Velocity (m/s)")
+                            plt.title("Velocity Comparison")
+                            plt.grid(axis='y', linestyle='--', alpha=0.7)
+                            plt.show()
+                    
+                
+               
+    
         again = input("\nRun another calculation? (yes/no): ").strip().lower()
+        while again not in ["yes","no"]:
+            again= input("Invalid Input. Either input yes or no:")
         if again != "yes":
             print("Exiting calculator. Goodbye!")
             break
         
+def api_limit_check():
+       
+    x = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+    while x not in ["wavelength", "velocity"]:
+        print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
+        x = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+    if x == "wavelength":
+        m = get_float_input("Enter mass of particle in kg: ")
+        v = get_float_input("Enter velocity of particle in m/s: ")
+        wavelength = wavelength_calc(m, v)
+        print(f"-> De Broglie wavelength: {wavelength:.5e} meters")# '.5e' converts to scientific notation with 5 decimal places
+    if x == "velocity":
+        m = get_float_input("Enter mass of particle in kg: ")
+        wavelength = get_float_input("Enter De Broglie wavelength in meters")
+        velocity = velocity_calc(m, wavelength)
+        print(f"-> Velocity of particle: {velocity:.5e} m/s")
+        
         
 def compare_values_element():
-    '''Handles optional side-by-side comparison for elements with bar plots.'''
-    k= input("Do you want to compare two elements? (yes/no): ").strip().lower()
-    while k not in ["yes", "no"]:
-        print("Invalid choice. Please enter 'yes' or 'no'.")
-        k = input("Please enter 'yes' or 'no': ").strip().lower()
+    '''Handles optional side-by-side comparison for elements with bar plots (different elements).'''
     l= input("element 1 symbol: ").strip()
     element_info1 = api.get_element_data(l)
-    while not element_info1:
+    if element_info1 is None:
         print(f"Element symbol '{l}' not found in database.")
         l = input("Please enter a valid element Symbol: ").strip()
         element_info1 = api.get_element_data(l)
     k= input("element 2 symbol: ").strip()
     element_info2 = api.get_element_data(k)
-    while not element_info2:
+    if element_info2 is None:
         print(f"Element symbol '{k}' not found in database.")
         k = input("Please enter a valid element Symbol: ").strip()
         element_info2 = api.get_element_data(k)
@@ -197,7 +273,7 @@ def compare_values_element():
         wl2 = wavelength_calc(mass_kg2, v2)
         plt.figure(figsize=(7, 5))
         plt.bar([element_info1['name'], element_info2['name']], [wl1, wl2], color=['#2b5c8f', '#d95f02'])
-        plt.ylabel("Wavelength (m)")
+        plt.ylabel("Wavelength (metre)")
         plt.title("De Broglie Wavelength Comparison")
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.show()
@@ -218,7 +294,7 @@ def compare_values_same_element():
     '''Handles optional side-by-side comparison for the same element with bar plots.'''
     symbol = input("Enter element Symbol (e.g., H, He, Fe): ").strip()
     element_info = api.get_element_data(symbol)
-    while not element_info:
+    if element_info is None:
         print(f"Element symbol '{symbol}' not found in database.")
         symbol = input("Please enter a valid element Symbol: ").strip()
         element_info = api.get_element_data(symbol)
@@ -236,7 +312,7 @@ def compare_values_same_element():
         wl2 = wavelength_calc(mass_kg, v2)
         plt.figure(figsize=(7, 5))
         plt.bar([f"{element_info['name']} (v1)", f"{element_info['name']} (v2)"], [wl1, wl2], color=['#2b5c8f', '#d95f02'])
-        plt.ylabel("Wavelength (m)")
+        plt.ylabel("Wavelength (metre)")
         plt.title(f"De Broglie Wavelength Comparison for {element_info['name']}")
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.show()

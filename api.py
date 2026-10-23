@@ -26,16 +26,25 @@ def fetch_all_elements():
         return element_cache
 
         
-    except requests.RequestException as error:
-        print(f"API Error: Failed to fetch element data ({error})")
+    except requests.RequestException:
         return None
 
 def get_element_data(symbol): # fetches a single element record from the cached database i.e. element_cache
     """
     Safely retrieves single element record from cached database.
     """
-    elements_db = fetch_all_elements()  # Ensure the database is fetched before accessing it
-    return elements_db.get(symbol.lower())
+    try:
+        elements_db = fetch_all_elements()  # Ensure the database is fetched before accessing it
+        return elements_db.get(symbol.strip().lower())
+    except requests.RequestException:
+        return None
 
+def symbol_element(z):
+      # Ensure the database is fetched before accessing it
+    try:
+        return fetch_all_elements().get(z.strip().lower()).get("symbol").strip().lower()
+    
+    except requests.RequestException:
+        return None
 if __name__ == "__main__":
-    fetch_all_elements()  # Fetch elements when the script is run directly
+    fetch_all_elements()

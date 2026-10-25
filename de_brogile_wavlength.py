@@ -115,6 +115,8 @@ def compare_values():
 
 def main():
     print("Initializing De Broglie Wavelength Calculator...")
+    print("if you want to insert value in y\u02e3 whether value x value is positive or negative and y is can be any positive value.")
+    print("Please insert in the form of 'yex', for example 5.13e-13 represents 5.13*10⁻¹³")
     elements_db = api.fetch_all_elements()
     while True:
         if not elements_db:
@@ -125,7 +127,7 @@ def main():
             if l== "single":
                 api_limit_check()
             if l== "double":
-                k = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()
+                k = input("What do you want to cṇalculate? (wavelength / velocity): ").strip().lower()
                 while k not in ["wavelength", "velocity"]:
                     print("Invalid choice. Please choose 'wavelength' or 'velocity'.")
                     k = input("What do you want to calculate? (wavelength / velocity): ").strip().lower()

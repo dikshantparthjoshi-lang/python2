@@ -67,6 +67,7 @@ def calculate_single_option():
             
 
 def compare_values():
+    
     """Handles optional side-by-side comparison with bar plots."""
     print("\n--- Comparison Tool ---")
     comp = input("What do you want to compare? (wavelength / velocity): ").strip().lower()
@@ -165,7 +166,7 @@ def main():
                     l= input("Invalid Input. Please enter either single or double:")
                 k= input(f"Do you want to create {l} value calculation element or standard (element/standard): ")
                 while k not in ["element","standard"]:
-                    l= input("Invalid Input. Please either element or standard:")
+                    k= input("Invalid Input. Please either element or standard:")
                 if k=="element":
                     if l=="single":
                         calculate_single_option()
